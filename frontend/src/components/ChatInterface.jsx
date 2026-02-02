@@ -87,6 +87,13 @@ export default function ChatInterface() {
             }
         } catch (err) {
             console.error("Transcription failed:", err);
+            // Show more context if it's the FFmpeg error
+            const errorMsg = err.response?.data?.detail || "Transcription failed. Is FFmpeg installed?";
+            setMessages(prev => [...prev, {
+                role: 'bot',
+                content: `Voice Error: ${errorMsg}`,
+                isError: true
+            }]);
         } finally {
             setIsTranscribing(false);
         }
