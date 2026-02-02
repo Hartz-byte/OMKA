@@ -1,0 +1,15 @@
+artifact_uri: file:///D:\AIML-Projects\OMKA/mlops/mlruns/695970438888813111/770469247ee146c8bc861ffbbf10b76e/artifacts
+end_time: 1770029150316
+entry_point_name: ''
+experiment_id: '695970438888813111'
+lifecycle_stage: active
+run_id: 770469247ee146c8bc861ffbbf10b76e
+run_name: traveling-cub-429
+run_uuid: 770469247ee146c8bc861ffbbf10b76e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1770029150092
+status: 3
+tags: []
+user_id: etern

@@ -1,0 +1,11 @@
+ The backend architecture of OMKA is based on FastAPI, an asynchronous framework for building APIs. It handles API requests, routes queries, manages ML pipelines, and serves streaming responses.
+
+Here's a high-level overview of the components in the backend:
+
+1. **STT Service (Speech to Text)**: This service uses Whisper for converting user audio into text.
+2. **RAG Service**: This service is responsible for Retrieval Augmented Generation, which helps prevent hallucinations by using a combination of an embedding model, FAISS vector store, and a retriever.
+3. **LLM Inference Service (Language Model)**: This service performs inference on the language model to generate responses to user queries.
+4. **Monitoring & Metrics**: This component keeps track of system performance and provides insights for improvement.
+
+Reference(s):
+[OMKA GitHub Repository](https://github.com/omk-ai/omka)
