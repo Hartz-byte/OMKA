@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api import ingest, query, transcribe, health
+from backend.api import ingest, query, transcribe, health, metrics, websocket
 
 app = FastAPI(title="OMKA Backend")
 
@@ -17,3 +17,5 @@ app.include_router(ingest.router)
 app.include_router(query.router)
 app.include_router(transcribe.router)
 app.include_router(health.router)
+app.include_router(metrics.router)
+app.include_router(websocket.router)

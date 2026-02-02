@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Bot, Quote, Sparkles, ShieldAlert, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { queryBackend, transcribeAudio } from '../lib/api';
+import { streamQuery, transcribeAudio } from '../lib/api';
 import VoiceInput from './VoiceInput';
 import { cn } from '../lib/utils';
 
@@ -26,23 +26,52 @@ export default function ChatInterface() {
         setInput('');
         setIsLoading(true);
 
+        // Create a placeholder bot message for streaming
+        const botMessageId = Date.now();
+        setMessages(prev => [...prev, {
+            id: botMessageId,
+            role: 'bot',
+            content: '',
+            sources: [],
+            score: 0,
+            isStreaming: true
+        }]);
+
+        let currentContent = '';
+
         try {
-            const result = await queryBackend(queryText);
-            const botMessage = {
-                role: 'bot',
-                content: result.answer,
-                sources: result.sources || [],
-                score: result.hallucination_score
-            };
-            setMessages(prev => [...prev, botMessage]);
+            await streamQuery(queryText, {
+                onMetadata: (data) => {
+                    setMessages(prev => prev.map(msg =>
+                        msg.id === botMessageId
+                            ? { ...msg, sources: data.sources, score: data.hallucination_score }
+                            : msg
+                    ));
+                },
+                onToken: (token) => {
+                    currentContent += token;
+                    setMessages(prev => prev.map(msg =>
+                        msg.id === botMessageId
+                            ? { ...msg, content: currentContent }
+                            : msg
+                    ));
+                },
+                onDone: () => {
+                    setMessages(prev => prev.map(msg =>
+                        msg.id === botMessageId
+                            ? { ...msg, isStreaming: false }
+                            : msg
+                    ));
+                    setIsLoading(false);
+                }
+            });
         } catch (err) {
             console.error("Query failed:", err);
-            setMessages(prev => [...prev, {
-                role: 'bot',
-                content: "Sorry, I'm having trouble connecting to the brain. Is the backend running?",
-                isError: true
-            }]);
-        } finally {
+            setMessages(prev => prev.map(msg =>
+                msg.id === botMessageId
+                    ? { ...msg, content: "Sorry, I'm having trouble connecting. Is the backend running?", isError: true, isStreaming: false }
+                    : msg
+            ));
             setIsLoading(false);
         }
     };
@@ -79,7 +108,7 @@ export default function ChatInterface() {
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            key={i}
+                            key={msg.id || i}
                             className={cn(
                                 "flex gap-4",
                                 msg.role === 'user' ? "justify-end" : "justify-start"
