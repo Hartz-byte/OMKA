@@ -1,0 +1,3 @@
+ The `omka.md` file appears to be a markdown file that contains the detailed description of the Offline Multimodal Knowledge Assistant (OMKA) project. It provides an overview, key objectives, system design, and other relevant details about this AI system. This includes information on its functionality, components such as Speech-to-Text (STT), Large Language Models (LLMs), Retrieval Augmented Generation (RAG), Generative AI, MLOps & monitoring, Scalable backend architecture, security and privacy measures, and more.
+
+(Source: The provided context)

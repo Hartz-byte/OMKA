@@ -1,0 +1,15 @@
+artifact_uri: file:///D:\AIML-Projects\OMKA/mlops/mlruns/214605991441758978/efa58674ba9f455085d25d937a10a87e/artifacts
+end_time: 1770024962668
+entry_point_name: ''
+experiment_id: '214605991441758978'
+lifecycle_stage: active
+run_id: efa58674ba9f455085d25d937a10a87e
+run_name: fun-lamb-379
+run_uuid: efa58674ba9f455085d25d937a10a87e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1770024962581
+status: 3
+tags: []
+user_id: etern

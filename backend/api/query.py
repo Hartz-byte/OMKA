@@ -5,7 +5,7 @@ import json
 import time
 from backend.rag.retrieval import cached_retrieve
 from backend.core.prompts import build_prompt
-from backend.core.ollama_client import stream_llm_response_async, generate_llm_response_async
+from backend.core.ollama_client import stream_llm_response_async
 from backend.config import TOP_K
 from backend.monitoring.hallucination import hallucination_score
 from backend.monitoring.mlflow_logger import log_run
@@ -22,28 +22,29 @@ async def query(payload: dict):
     context, sources = cached_retrieve(query_text, TOP_K)
     prompt = build_prompt(context, query_text)
     
-    # 2. Get full response for hallucination score calculation 
-    # (Since we need the full answer for the current heuristic score)
-    # Note: In a real high-throughput system, we might score asynchronously 
-    # or use a different streaming-friendly metric.
-    full_answer = await generate_llm_response_async(prompt)
-    score = hallucination_score(full_answer, context)
-    
-    # Log metrics
-    metrics.record_latency(start_time)
-    metrics.record_hallucination_score(score)
-    log_run(query_text, full_answer, context, sources, score)
-
     async def event_generator():
-        # First send metadata
+        full_answer = ""
+        
+        # First send initial metadata (score will be updated at the end)
         metadata = {
             "sources": sources,
-            "hallucination_score": score
+            "hallucination_score": 0.0 # Placeholder
         }
         yield json.dumps(metadata) + "\n--METADATA_END--\n"
         
-        # Then stream tokens from the actual generator
+        # Then stream tokens and collect them
         async for token in stream_llm_response_async(prompt):
+            full_answer += token
             yield token
+            
+        # Finalization: Calculate metrics after stream is complete
+        score = hallucination_score(full_answer, context)
+        metrics.record_latency(start_time)
+        metrics.record_hallucination_score(score)
+        log_run(query_text, full_answer, context, sources, score)
+        
+        # Send final metadata update
+        final_meta = {"hallucination_score": score, "done": True}
+        yield "\n--METADATA_START--\n" + json.dumps(final_meta) + "\n--METADATA_END--\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

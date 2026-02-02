@@ -35,27 +35,41 @@ export const streamQuery = async (queryText, { onMetadata, onToken, onDone }) =>
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let receivedMetadata = false;
+    let buffer = "";
 
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
 
-        if (!receivedMetadata && chunk.includes('--METADATA_END--')) {
-            const parts = chunk.split('\n--METADATA_END--\n');
-            try {
-                const metadata = JSON.parse(parts[0]);
-                onMetadata(metadata);
-                receivedMetadata = true;
-                // The rest of the chunk might contain the first tokens
-                if (parts[1]) onToken(parts[1]);
-            } catch (e) {
-                console.error("Error parsing metadata", e);
+        // Process buffer while it contains full metadata segments
+        while (buffer.includes('--METADATA_END--')) {
+            const endIdx = buffer.indexOf('--METADATA_END--');
+            const segment = buffer.substring(0, endIdx);
+            buffer = buffer.substring(endIdx + '--METADATA_END--'.length);
+
+            if (segment.includes('--METADATA_START--')) {
+                const metaContent = segment.split('--METADATA_START--')[1];
+                try {
+                    onMetadata(JSON.parse(metaContent.trim()));
+                } catch (e) { /* ignore partial/malformed json mid-stream */ }
+            } else if (segment.trim()) {
+                // Check if it's the initial metadata JSON
+                try {
+                    const json = JSON.parse(segment.trim());
+                    onMetadata(json);
+                } catch (e) {
+                    // It's not JSON, so it must be raw text tokens before the first separator
+                    onToken(segment);
+                }
             }
-        } else {
-            onToken(chunk);
+        }
+
+        // Everything left in the buffer that isn't a partial tag is a token
+        if (buffer.length > 0 && !buffer.includes('--METADATA')) {
+            onToken(buffer);
+            buffer = "";
         }
     }
     if (onDone) onDone();

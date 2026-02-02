@@ -13,7 +13,9 @@ async def generate_llm_response_async(prompt: str) -> str:
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=300) as resp:
             if resp.status != 200:
-                raise Exception(f"Ollama error: {resp.status}")
+                error_text = await resp.text()
+                logger.error(f"Ollama error {resp.status}: {error_text}")
+                raise Exception(f"Ollama error: {resp.status} - {error_text}")
             data = await resp.json()
             return data["response"]
 
@@ -27,7 +29,9 @@ async def stream_llm_response_async(prompt: str):
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=300) as resp:
             if resp.status != 200:
-                raise Exception(f"Ollama error: {resp.status}")
+                error_text = await resp.text()
+                logger.error(f"Ollama error {resp.status}: {error_text}")
+                raise Exception(f"Ollama error: {resp.status} - {error_text}")
             
             async for line in resp.content:
                 if line:
