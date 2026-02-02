@@ -1,0 +1,32 @@
+# ML
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+
+# Backend
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+pydantic==2.6.4
+aiofiles==23.2.1
+requests==2.31.0
+
+# Whisper (STT)
+openai-whisper==20231117
+ffmpeg-python==0.2.0
+
+# Embeddings (SentenceTransformers)
+sentence-transformers==2.5.1
+
+# FAISS (CPU)
+faiss-cpu==1.7.4
+
+# Vector & RAG Utilities
+numpy==1.26.4
+scipy==1.12.0
+scikit-learn==1.4.1.post1
+
+# MLOps Tooling
+mlflow==2.10.2
+
+# DVC
+dvc==3.48.4
