@@ -6,9 +6,14 @@ from backend.rag.vector_store import search
 def cached_retrieve(query: str, top_k: int):
     query_vec = embed_texts([query])
     indices, _, metadata = search(query_vec, top_k)
+    
+    if len(indices) == 0:
+        return "", []
+        
     context = ""
     sources = []
     for idx in indices:
-        context += metadata[idx]["text"] + "\n"
-        sources.append(metadata[idx]["source"])
+        if idx < len(metadata):
+            context += metadata[idx]["text"] + "\n"
+            sources.append(metadata[idx]["source"])
     return context, sources

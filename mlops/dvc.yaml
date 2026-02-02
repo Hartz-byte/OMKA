@@ -1,0 +1,16 @@
+stages:
+  ingest:
+    cmd: python -m backend.pipelines.ingest_pipeline
+    deps:
+      - data/
+    outs:
+      - models/faiss_index/index.bin
+  
+  evaluate:
+    cmd: python -m backend.pipelines.evaluation_pipeline
+    deps:
+      - backend/pipelines/evaluation_pipeline.py
+      - models/faiss_index/index.bin
+    metrics:
+      - mlops/metrics.json:
+          cache: false
